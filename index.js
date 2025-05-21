@@ -20,25 +20,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const column = document.createElement('div');
         column.className = 'column';
         column.id = columnId;
-
+    
         column.innerHTML = `
             <div class="column-header">
                 <div class="column-title" data-column-id="${columnId}">${title}</div>
                 <span class="card-count">(0)</span>
                 <button class="delete-column-btn" data-column-id="${columnId}">✕</button>
             </div>
-            <div class="cards-container" data-column-id="${columnId}"></div>
             <button class="add-card-btn" data-column-id="${columnId}">+ Add a card</button>
+            <div class="cards-container" data-column-id="${columnId}"></div>
         `;
-
+    
         board.appendChild(column);
-
+    
         // Add event listeners for the new column
         setupColumnEvents(columnId);
         
         // Save board data
         saveBoardData();
-
+    
         return columnId;
     }
 
