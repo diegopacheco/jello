@@ -123,7 +123,7 @@ header {
 }
 
 .add-card-btn {
-    margin: 0 10px 10px 10px;
+    margin: 10px 10px 0 10px;
     padding: 8px;
     background-color: rgba(9, 30, 66, 0.04);
     color: #6b778c;
@@ -131,8 +131,70 @@ header {
     border-radius: 3px;
     cursor: pointer;
     text-align: left;
+    order: -1;
 }
 
 .add-card-btn:hover {
     background-color: rgba(9, 30, 66, 0.08);
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.voting-buttons {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.vote-up-btn, .vote-down-btn {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    color: #6b778c;
+    cursor: pointer;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.vote-up-btn:hover {
+    background-color: #e0f3ff;
+    color: #0079bf;
+}
+
+.vote-down-btn:hover {
+    background-color: #ffebee;
+    color: #b71c1c;
+}
+
+.upvote-count, .downvote-count {
+    font-size: 0.8rem;
+    color: #6b778c;
+    min-width: 16px;
+    text-align: center;
+}
+
+.card-content {
+    margin-right: 20px;
+    word-wrap: break-word;
+    margin-bottom: 5px;
+}
+
+.delete-card-btn {
+    background-color: transparent;
+    border: none;
+    color: #6b778c;
+    cursor: pointer;
+    font-size: 0.8rem;
+    position: relative;
+    top: 0;
+    right: 0;
 }

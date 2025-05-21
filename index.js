@@ -91,6 +91,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Function to setup voting buttons for a card
+    function setupVotingButtons(card) {
+        const upBtn = card.querySelector('.vote-up-btn');
+        const downBtn = card.querySelector('.vote-down-btn');
+        const upCount = card.querySelector('.upvote-count');
+        const downCount = card.querySelector('.downvote-count');
+        
+        upBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            let count = parseInt(upCount.textContent);
+            upCount.textContent = ++count;
+            saveBoardData();
+        });
+        
+        downBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            let count = parseInt(downCount.textContent);
+            downCount.textContent = ++count;
+            saveBoardData();
+        });
+    }
+
     // Function to make an element draggable
     function setupDraggable(element) {
         element.setAttribute('draggable', 'true');
@@ -200,11 +222,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (newContent) {
                     card.innerHTML = `
                         <div class="card-content">${newContent}</div>
-                        <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                        <div class="card-actions">
+                            <div class="voting-buttons">
+                                <button class="vote-up-btn" data-card-id="${cardId}">^</button>
+                                <span class="upvote-count">0</span>
+                                <button class="vote-down-btn" data-card-id="${cardId}">v</button>
+                                <span class="downvote-count">0</span>
+                            </div>
+                            <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                        </div>
                     `;
                     
                     // Make the card draggable
                     setupDraggable(card);
+                    
+                    // Setup voting buttons
+                    setupVotingButtons(card);
                     
                     // Add event listener for delete card button
                     const deleteCardBtn = card.querySelector('.delete-card-btn');
@@ -219,6 +252,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cardContent = card.querySelector('.card-content');
                     cardContent.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        
+                        // Save voting data before editing
+                        const upvotes = card.querySelector('.upvote-count').textContent;
+                        const downvotes = card.querySelector('.downvote-count').textContent;
+                        
                         const currentContent = cardContent.textContent;
                         card.innerHTML = `
                             <textarea class="card-edit-textarea">${currentContent}</textarea>
@@ -240,11 +278,22 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (updatedContent) {
                                 card.innerHTML = `
                                     <div class="card-content">${updatedContent}</div>
-                                    <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                                    <div class="card-actions">
+                                        <div class="voting-buttons">
+                                            <button class="vote-up-btn" data-card-id="${cardId}">^</button>
+                                            <span class="upvote-count">${upvotes}</span>
+                                            <button class="vote-down-btn" data-card-id="${cardId}">v</button>
+                                            <span class="downvote-count">${downvotes}</span>
+                                        </div>
+                                        <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                                    </div>
                                 `;
                                 
                                 // Make the card draggable again
                                 setupDraggable(card);
+                                
+                                // Setup voting buttons again
+                                setupVotingButtons(card);
                                 
                                 // Re-add event listeners
                                 const newDeleteCardBtn = card.querySelector('.delete-card-btn');
@@ -258,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const newCardContent = card.querySelector('.card-content');
                                 newCardContent.addEventListener('click', (e) => {
                                     e.stopPropagation();
-                                    finishCardEdit.call(this); // Call finishCardEdit with the current context
+                                    cardContent.click(); // Reuse the click handler
                                 });
                                 
                                 saveBoardData();
@@ -278,15 +327,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // Create a card with existing content (used when loading from localStorage)
+            let upvotes = 0;
+            let downvotes = 0;
+            let cardText = content;
+            
+            // Check if content is an object (from updated localStorage format)
+            if (typeof content === 'object' && content !== null) {
+                upvotes = content.upvotes || 0;
+                downvotes = content.downvotes || 0;
+                cardText = content.text;
+            }
+            
             card.innerHTML = `
-                <div class="card-content">${content}</div>
-                <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                <div class="card-content">${cardText}</div>
+                <div class="card-actions">
+                    <div class="voting-buttons">
+                        <button class="vote-up-btn" data-card-id="${cardId}">^</button>
+                        <span class="upvote-count">${upvotes}</span>
+                        <button class="vote-down-btn" data-card-id="${cardId}">v</button>
+                        <span class="downvote-count">${downvotes}</span>
+                    </div>
+                    <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                </div>
             `;
             
             cardsContainer.appendChild(card);
             
             // Make the card draggable
             setupDraggable(card);
+            
+            // Setup voting buttons
+            setupVotingButtons(card);
             
             // Add event listener for delete card button
             const deleteCardBtn = card.querySelector('.delete-card-btn');
@@ -301,6 +372,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const cardContent = card.querySelector('.card-content');
             cardContent.addEventListener('click', (e) => {
                 e.stopPropagation();
+                
+                // Save voting data before editing
+                const upvotes = card.querySelector('.upvote-count').textContent;
+                const downvotes = card.querySelector('.downvote-count').textContent;
+                
                 const currentContent = cardContent.textContent;
                 card.innerHTML = `
                     <textarea class="card-edit-textarea">${currentContent}</textarea>
@@ -314,11 +390,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (updatedContent) {
                         card.innerHTML = `
                             <div class="card-content">${updatedContent}</div>
-                            <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                            <div class="card-actions">
+                                <div class="voting-buttons">
+                                    <button class="vote-up-btn" data-card-id="${cardId}">^</button>
+                                    <span class="upvote-count">${upvotes}</span>
+                                    <button class="vote-down-btn" data-card-id="${cardId}">v</button>
+                                    <span class="downvote-count">${downvotes}</span>
+                                </div>
+                                <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                            </div>
                         `;
                         
                         // Make the card draggable again
                         setupDraggable(card);
+                        
+                        // Setup voting buttons again
+                        setupVotingButtons(card);
                         
                         // Re-add event listeners
                         const newDeleteCardBtn = card.querySelector('.delete-card-btn');
@@ -372,7 +459,14 @@ document.addEventListener('DOMContentLoaded', () => {
             column.querySelectorAll('.card').forEach(card => {
                 const cardContent = card.querySelector('.card-content')?.textContent;
                 if (cardContent) {
-                    cards.push(cardContent);
+                    const upvotes = parseInt(card.querySelector('.upvote-count')?.textContent || "0");
+                    const downvotes = parseInt(card.querySelector('.downvote-count')?.textContent || "0");
+                    
+                    cards.push({
+                        text: cardContent,
+                        upvotes: upvotes,
+                        downvotes: downvotes
+                    });
                 }
             });
 
