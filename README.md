@@ -13,3 +13,12 @@ Jello: Trello-like written purely in JavaScript, it's all self-contained.
 * Display card and vote count
 * Up/Down vote cards
 * Auto-sort cards by vote count
+
+## Rationale
+
+* Vanilla JS
+* No React
+* No Extermal Libraries
+* No CSS Frameworks
+* No build tools required
+* Minimalist
