@@ -1,0 +1,12 @@
+{
+  "name": "jello",
+  "version": "1.0.0",
+  "description": "Jello: Trello-like written purely in JavaScript, it's all self-contained.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
