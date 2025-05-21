@@ -102,6 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             let count = parseInt(upCount.textContent);
             upCount.textContent = ++count;
+            
+            // Get the column ID to sort cards
+            const columnId = card.closest('.cards-container').getAttribute('data-column-id');
+            
+            // Sort cards after upvoting
+            sortCardsByVotes(columnId);
+            
             saveBoardData();
         });
         
@@ -485,11 +492,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadBoardData() {
         const savedData = localStorage.getItem('jelloBoard');
         const savedNextId = localStorage.getItem('jelloNextColumnId');
-
+    
         if (savedNextId) {
             nextColumnId = parseInt(savedNextId);
         }
-
+    
         if (savedData) {
             const boardData = JSON.parse(savedData);
             
@@ -499,6 +506,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 column.cards.forEach(cardContent => {
                     addCard(columnId, cardContent);
                 });
+                
+                // Sort cards by votes after loading
+                sortCardsByVotes(columnId);
             });
             
             updateCardCounts();
@@ -507,4 +517,22 @@ document.addEventListener('DOMContentLoaded', () => {
             addColumn('To Do');
         }
     }
+
+    function sortCardsByVotes(columnId) {
+        const cardsContainer = document.querySelector(`.cards-container[data-column-id="${columnId}"]`);
+        const cards = Array.from(cardsContainer.querySelectorAll('.card'));
+        
+        // Sort cards by upvote count (highest first)
+        cards.sort((a, b) => {
+            const aUpvotes = parseInt(a.querySelector('.upvote-count').textContent) || 0;
+            const bUpvotes = parseInt(b.querySelector('.upvote-count').textContent) || 0;
+            return bUpvotes - aUpvotes; // Descending order (highest votes first)
+        });
+        
+        // Re-append cards in the new order
+        cards.forEach(card => {
+            cardsContainer.appendChild(card);
+        });
+    }
+
 });
