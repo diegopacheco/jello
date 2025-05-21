@@ -48,6 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const columnTitle = column.querySelector('.column-title');
         const deleteColumnBtn = column.querySelector('.delete-column-btn');
         const addCardBtn = column.querySelector('.add-card-btn');
+        const cardsContainer = column.querySelector('.cards-container');
+
+        // Setup drop zone for this column's cards container
+        setupDropZone(cardsContainer);
 
         // Event listener for column title (rename)
         columnTitle.addEventListener('click', () => {
@@ -87,6 +91,82 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Function to make an element draggable
+    function setupDraggable(element) {
+        element.setAttribute('draggable', 'true');
+        
+        element.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', element.id);
+            element.classList.add('dragging');
+            
+            // Disable pointer events on card content while dragging to prevent issues
+            const cardContent = element.querySelector('.card-content');
+            if (cardContent) {
+                cardContent.style.pointerEvents = 'none';
+            }
+        });
+        
+        element.addEventListener('dragend', () => {
+            element.classList.remove('dragging');
+            
+            // Re-enable pointer events
+            const cardContent = element.querySelector('.card-content');
+            if (cardContent) {
+                cardContent.style.pointerEvents = 'auto';
+            }
+            
+            updateCardCounts();
+            saveBoardData();
+        });
+    }
+    
+    // Function to set up a drop zone
+    function setupDropZone(element) {
+        element.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const afterElement = getDragAfterElement(element, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            
+            if (draggable && afterElement == null) {
+                element.appendChild(draggable);
+            } else if (draggable) {
+                element.insertBefore(draggable, afterElement);
+            }
+        });
+        
+        element.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const cardId = e.dataTransfer.getData('text/plain');
+            const card = document.getElementById(cardId);
+            
+            if (card && element.contains(card)) {
+                // Card was reordered within the same column
+                // Nothing special to do
+            } else if (card) {
+                // Card was moved to a different column
+                element.appendChild(card);
+            }
+        });
+    }
+    
+    // Helper function to determine where to insert the dragged card
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
     // Function to add a new card to a column
     function addCard(columnId, content = '') {
         const cardsContainer = document.querySelector(`.cards-container[data-column-id="${columnId}"]`);
@@ -123,9 +203,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
                     `;
                     
+                    // Make the card draggable
+                    setupDraggable(card);
+                    
                     // Add event listener for delete card button
                     const deleteCardBtn = card.querySelector('.delete-card-btn');
-                    deleteCardBtn.addEventListener('click', () => {
+                    deleteCardBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         card.remove();
                         updateCardCounts();
                         saveBoardData();
@@ -133,7 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Add event listener for editing card content
                     const cardContent = card.querySelector('.card-content');
-                    cardContent.addEventListener('click', () => {
+                    cardContent.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         const currentContent = cardContent.textContent;
                         card.innerHTML = `
                             <textarea class="card-edit-textarea">${currentContent}</textarea>
@@ -158,21 +243,29 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
                                 `;
                                 
+                                // Make the card draggable again
+                                setupDraggable(card);
+                                
                                 // Re-add event listeners
                                 const newDeleteCardBtn = card.querySelector('.delete-card-btn');
-                                newDeleteCardBtn.addEventListener('click', () => {
+                                newDeleteCardBtn.addEventListener('click', (e) => {
+                                    e.stopPropagation();
                                     card.remove();
                                     updateCardCounts();
                                     saveBoardData();
                                 });
                                 
-                                card.querySelector('.card-content').addEventListener('click', () => {
-                                    cardContent.click(); // Reuse the click handler
+                                const newCardContent = card.querySelector('.card-content');
+                                newCardContent.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    finishCardEdit.call(this); // Call finishCardEdit with the current context
                                 });
                                 
                                 saveBoardData();
                             } else {
                                 card.remove();
+                                updateCardCounts();
+                                saveBoardData();
                             }
                         }
                     });
@@ -192,9 +285,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             cardsContainer.appendChild(card);
             
+            // Make the card draggable
+            setupDraggable(card);
+            
             // Add event listener for delete card button
             const deleteCardBtn = card.querySelector('.delete-card-btn');
-            deleteCardBtn.addEventListener('click', () => {
+            deleteCardBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 card.remove();
                 updateCardCounts();
                 saveBoardData();
@@ -202,7 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Add event listener for editing card content
             const cardContent = card.querySelector('.card-content');
-            cardContent.addEventListener('click', () => {
+            cardContent.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const currentContent = cardContent.textContent;
                 card.innerHTML = `
                     <textarea class="card-edit-textarea">${currentContent}</textarea>
@@ -219,15 +317,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
                         `;
                         
+                        // Make the card draggable again
+                        setupDraggable(card);
+                        
                         // Re-add event listeners
                         const newDeleteCardBtn = card.querySelector('.delete-card-btn');
-                        newDeleteCardBtn.addEventListener('click', () => {
+                        newDeleteCardBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
                             card.remove();
                             updateCardCounts();
                             saveBoardData();
                         });
                         
-                        card.querySelector('.card-content').addEventListener('click', () => {
+                        const newCardContent = card.querySelector('.card-content');
+                        newCardContent.addEventListener('click', (e) => {
+                            e.stopPropagation();
                             cardContent.click(); // Reuse the click handler
                         });
                         
