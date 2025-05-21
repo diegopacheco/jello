@@ -103,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
             let count = parseInt(upCount.textContent);
             upCount.textContent = ++count;
             
+            // Update data attribute for styling based on vote count
+            card.setAttribute('data-upvotes', count);
+            
             // Get the column ID to sort cards
             const columnId = card.closest('.cards-container').getAttribute('data-column-id');
             
@@ -177,6 +180,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Card was moved to a different column
                 element.appendChild(card);
             }
+            
+            // Get the column ID to sort cards
+            const columnId = element.getAttribute('data-column-id');
+            
+            // Sort cards after dropping
+            sortCardsByVotes(columnId);
         });
     }
     
@@ -228,17 +237,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newContent = textarea.value.trim();
                 if (newContent) {
                     card.innerHTML = `
-                        <div class="card-content">${newContent}</div>
-                        <div class="card-actions">
-                            <div class="voting-buttons">
-                                <button class="vote-up-btn" data-card-id="${cardId}">^</button>
-                                <span class="upvote-count">0</span>
-                                <button class="vote-down-btn" data-card-id="${cardId}">v</button>
-                                <span class="downvote-count">0</span>
-                            </div>
-                            <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                    <div class="card-content">${newContent}</div>
+                    <div class="card-actions">
+                        <div class="voting-buttons">
+                            <button class="vote-up-btn" data-card-id="${cardId}">
+                                <img src="images/up.png" alt="Upvote" class="vote-icon">
+                            </button>
+                            <span class="upvote-count">0</span>
+                            <button class="vote-down-btn" data-card-id="${cardId}">
+                                <img src="images/down.png" alt="Downvote" class="vote-icon">
+                            </button>
+                            <span class="downvote-count">0</span>
                         </div>
-                    `;
+                        <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                    </div>
+                `;
+                    
+                    // Set initial upvotes data attribute
+                    card.setAttribute('data-upvotes', 0);
                     
                     // Make the card draggable
                     setupDraggable(card);
@@ -284,17 +300,24 @@ document.addEventListener('DOMContentLoaded', () => {
                             const updatedContent = editTextarea.value.trim();
                             if (updatedContent) {
                                 card.innerHTML = `
-                                    <div class="card-content">${updatedContent}</div>
-                                    <div class="card-actions">
-                                        <div class="voting-buttons">
-                                            <button class="vote-up-btn" data-card-id="${cardId}">^</button>
-                                            <span class="upvote-count">${upvotes}</span>
-                                            <button class="vote-down-btn" data-card-id="${cardId}">v</button>
-                                            <span class="downvote-count">${downvotes}</span>
-                                        </div>
-                                        <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                                <div class="card-content">${updatedContent}</div>
+                                <div class="card-actions">
+                                    <div class="voting-buttons">
+                                        <button class="vote-up-btn" data-card-id="${cardId}">
+                                            <img src="images/up.png" alt="Upvote" class="vote-icon">
+                                        </button>
+                                        <span class="upvote-count">${upvotes}</span>
+                                        <button class="vote-down-btn" data-card-id="${cardId}">
+                                            <img src="images/down.png" alt="Downvote" class="vote-icon">
+                                        </button>
+                                        <span class="downvote-count">${downvotes}</span>
                                     </div>
-                                `;
+                                    <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
+                                </div>
+                            `;
+                                
+                                // Restore data attribute for upvotes
+                                card.setAttribute('data-upvotes', upvotes);
                                 
                                 // Make the card draggable again
                                 setupDraggable(card);
@@ -349,14 +372,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="card-content">${cardText}</div>
                 <div class="card-actions">
                     <div class="voting-buttons">
-                        <button class="vote-up-btn" data-card-id="${cardId}">^</button>
+                        <button class="vote-up-btn" data-card-id="${cardId}">
+                            <img src="images/up.png" alt="Upvote" class="vote-icon">
+                        </button>
                         <span class="upvote-count">${upvotes}</span>
-                        <button class="vote-down-btn" data-card-id="${cardId}">v</button>
+                        <button class="vote-down-btn" data-card-id="${cardId}">
+                            <img src="images/down.png" alt="Downvote" class="vote-icon">
+                        </button>
                         <span class="downvote-count">${downvotes}</span>
                     </div>
                     <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
                 </div>
             `;
+            
+            // Set data attribute for upvotes
+            card.setAttribute('data-upvotes', upvotes);
             
             cardsContainer.appendChild(card);
             
@@ -399,14 +429,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="card-content">${updatedContent}</div>
                             <div class="card-actions">
                                 <div class="voting-buttons">
-                                    <button class="vote-up-btn" data-card-id="${cardId}">^</button>
+                                    <button class="vote-up-btn" data-card-id="${cardId}">
+                                        <img src="images/up.png" alt="Upvote" class="vote-icon">
+                                    </button>
                                     <span class="upvote-count">${upvotes}</span>
-                                    <button class="vote-down-btn" data-card-id="${cardId}">v</button>
+                                    <button class="vote-down-btn" data-card-id="${cardId}">
+                                        <img src="images/down.png" alt="Downvote" class="vote-icon">
+                                    </button>
                                     <span class="downvote-count">${downvotes}</span>
                                 </div>
                                 <button class="delete-card-btn" data-card-id="${cardId}">✕</button>
                             </div>
                         `;
+                        
+                        // Restore data attribute for upvotes
+                        card.setAttribute('data-upvotes', upvotes);
                         
                         // Make the card draggable again
                         setupDraggable(card);
@@ -517,7 +554,8 @@ document.addEventListener('DOMContentLoaded', () => {
             addColumn('To Do');
         }
     }
-
+    
+    // Function to sort cards by votes
     function sortCardsByVotes(columnId) {
         const cardsContainer = document.querySelector(`.cards-container[data-column-id="${columnId}"]`);
         const cards = Array.from(cardsContainer.querySelectorAll('.card'));
@@ -534,5 +572,4 @@ document.addEventListener('DOMContentLoaded', () => {
             cardsContainer.appendChild(card);
         });
     }
-
 });
