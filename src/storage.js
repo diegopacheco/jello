@@ -3,7 +3,6 @@ import { addColumn } from './columns.js';
 import { addCard, sortCardsByVotes } from './cards.js';
 import { updateCardCounts } from './counter.js';
 
-// Function to save board data to localStorage
 export function saveBoardData() {
     const columns = document.querySelectorAll('.column');
     const boardData = [];
@@ -38,7 +37,6 @@ export function saveBoardData() {
     localStorage.setItem('jelloNextColumnId', getNextColumnId());
 }
 
-// Function to load board data from localStorage
 export function loadBoardData() {
     const savedData = localStorage.getItem('jelloBoard');
     const savedNextId = localStorage.getItem('jelloNextColumnId');
@@ -56,8 +54,6 @@ export function loadBoardData() {
             column.cards.forEach(cardContent => {
                 addCard(columnId, cardContent);
             });
-            
-            // Sort cards by votes after loading
             sortCardsByVotes(columnId);
         });
         
