@@ -3,11 +3,10 @@ import { setupDropZone } from './dragdrop.js';
 import { addCard } from './cards.js';
 import { saveBoardData, updateCardCounts } from './app.js';
 
-// Function to add a new column
 export function addColumn(title = `Column ${getNextColumnId()}`) {
     const board = document.getElementById('board');
     const columnId = `column-${getNextColumnId()}`;
-    incrementNextColumnId();  // Increment after using the current value
+    incrementNextColumnId();
     
     const column = document.createElement('div');
     column.className = 'column';
@@ -24,51 +23,54 @@ export function addColumn(title = `Column ${getNextColumnId()}`) {
     `;
 
     board.appendChild(column);
-
-    // Add event listeners for the new column
     setupColumnEvents(columnId);
-    
-    // Save board data
     saveBoardData();
-
     return columnId;
 }
 
-// Function to setup event listeners for a column
 export function setupColumnEvents(columnId) {
     const column = document.getElementById(columnId);
+    if (!column) return;
+    
     const columnTitle = column.querySelector('.column-title');
     const deleteColumnBtn = column.querySelector('.delete-column-btn');
     const addCardBtn = column.querySelector('.add-card-btn');
     const cardsContainer = column.querySelector('.cards-container');
 
-    // Setup drop zone for this column's cards container
     setupDropZone(cardsContainer);
-
-    // Event listener for column title (rename)
+    
     columnTitle.addEventListener('click', () => {
         const currentTitle = columnTitle.textContent;
-        columnTitle.innerHTML = `<input type="text" class="column-title-input" value="${currentTitle}">`;
+        const parentElement = columnTitle.parentElement;
         
-        const input = columnTitle.querySelector('.column-title-input');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'column-title-input';
+        input.value = currentTitle;
+        
+        columnTitle.textContent = '';
+        columnTitle.appendChild(input);
+        
         input.focus();
         input.select();
+
+        const finishRenaming = () => {
+            if (input.parentNode) {
+                const newTitle = input.value.trim() || currentTitle;
+                columnTitle.textContent = newTitle;
+                saveBoardData();
+            }
+        };
 
         input.addEventListener('blur', finishRenaming);
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                finishRenaming();
+                e.preventDefault();
+                input.blur();
             }
         });
-
-        function finishRenaming() {
-            const newTitle = input.value.trim() || currentTitle;
-            columnTitle.textContent = newTitle;
-            saveBoardData();
-        }
     });
 
-    // Event listener for delete column button
     deleteColumnBtn.addEventListener('click', () => {
         if (confirm('Are you sure you want to delete this column and all its cards?')) {
             column.remove();
@@ -77,13 +79,27 @@ export function setupColumnEvents(columnId) {
         }
     });
 
-    // Event listener for add card button
     addCardBtn.addEventListener('click', () => {
         addCard(columnId);
     });
 }
 
-export function setupColumnListeners() {
-    // This function can be empty for now since we're setting up column events when each column is created
-    console.log("Column listeners initialized");
+export function updateColumn(columnId, title) {
+    const column = document.getElementById(columnId);
+    if (column) {
+        const titleElement = column.querySelector('.column-title');
+        if (titleElement) {
+            titleElement.textContent = title;
+            saveBoardData();
+        }
+    }
+}
+
+export function deleteColumn(columnId) {
+    const column = document.getElementById(columnId);
+    if (column) {
+        column.remove();
+        updateCardCounts();
+        saveBoardData();
+    }
 }
