@@ -1,7 +1,6 @@
 import { saveBoardData, updateCardCounts } from './app.js';
 import { sortCardsByVotes } from './cards.js';
 
-// Function to make an element draggable
 export function setupDraggable(element) {
     element.setAttribute('draggable', 'true');
     
@@ -30,7 +29,6 @@ export function setupDraggable(element) {
     });
 }
 
-// Function to set up a drop zone
 export function setupDropZone(element) {
     element.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -59,10 +57,7 @@ export function setupDropZone(element) {
             element.appendChild(card);
         }
         
-        // Get the column ID to sort cards
         const columnId = element.getAttribute('data-column-id');
-        
-        // Sort cards after dropping
         sortCardsByVotes(columnId);
     });
 }
